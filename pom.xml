@@ -14,7 +14,7 @@
     </properties>
 
     <modules>
-        <module>tracker</module>
+        <module>advertiser-tracker</module>
     </modules>
 
 </project>
