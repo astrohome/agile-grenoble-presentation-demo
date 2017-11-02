@@ -2,7 +2,8 @@
 
 module.exports = {
   root: true,
-  parserOptions: {
+  parser: 'babel-eslint',
+  parserOptions: {    
     ecmaVersion: 2017,
     sourceType: 'module'
   },
@@ -11,11 +12,11 @@ module.exports = {
   },
   // https://github.com/standard/standard/blob/master/docs/RULES-en.md
   extends: [
-    'standard',
-    'plugin:vue/recommended' // or 'plugin:vue/base'
+    'standard'
   ],
   // required to lint *.vue files
   plugins: [
+    'vue',
     'html'
   ],
   // add your custom rules here
