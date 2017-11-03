@@ -1,14 +1,13 @@
-package com.criteo.demo.tracker.model;
+package com.criteo.demo.common.model;
 
-import java.io.Serializable;
-
-public class ViewProduct implements Serializable {
-
+public class KafkaProductViewMessage {
     private int userId;
     private int productId;
     private long timestamp;
 
-    public ViewProduct(int userId, int productId, long timestamp) {
+    public KafkaProductViewMessage() {}
+
+    public KafkaProductViewMessage(int userId, int productId, long timestamp) {
         this.userId = userId;
         this.productId = productId;
         this.timestamp = timestamp;

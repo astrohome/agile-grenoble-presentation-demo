@@ -1,7 +1,7 @@
 package com.criteo.demo.tracker.controller;
 
+import com.criteo.demo.common.model.KafkaProductViewMessage;
 import com.criteo.demo.tracker.kafka.Sender;
-import com.criteo.demo.tracker.model.ViewProduct;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -28,7 +28,7 @@ public class AdvertiserTrackingController {
     public void click(@RequestParam(name = "userid") int userId, @RequestParam(name = "productid") int productId)
             throws JsonProcessingException {
         log.debug("user_id: " + userId);
-        ViewProduct viewProduct = new ViewProduct(userId, productId, System.currentTimeMillis());
+        KafkaProductViewMessage viewProduct = new KafkaProductViewMessage(userId, productId, System.currentTimeMillis());
         this.sender.send("view_product", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(viewProduct));
     }
 }
