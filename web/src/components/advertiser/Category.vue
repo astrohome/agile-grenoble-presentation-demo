@@ -1,6 +1,9 @@
 <template>
   <div v-cloak>
-    <div v-bind:key="product.id" v-for="product in products.get(id)">
+      <router-link :to="{name: 'index-advertiser'}">
+             Retour
+            </router-link>
+    <div v-bind:key="product.id" v-for="product in categoryProducts">
       <section class="section">
       <article class="media">
         <figure class="media-left">
@@ -10,7 +13,7 @@
         </figure>
         <div class="media-content">
           <div class="content">
-            <router-link :to="{ name: 'one-product', params: { id: product.id }}">
+            <router-link :to="{ name: 'one-product', params: { 'productId': product.id, 'categoryId': categoryId }}">
               {{ product.name }}
             </router-link>
           </div>
@@ -23,7 +26,12 @@
 
 <script>
 export default {
-  props: ['id'],
+  props: {
+    categoryId: {
+      type: Number,
+      required: true
+    }
+  },
   methods: {
     getPic (productId) {
       return require('@/assets/advertiser/' + productId + '.jpg')
@@ -31,7 +39,8 @@ export default {
   },
   data () {
     return {
-      products: new Map()
+      categoryProducts: [],
+      allProducts: new Map()
       .set(1, [
         {
           id: 101,
@@ -53,6 +62,9 @@ export default {
         }
       ])
     }
+  },
+  mounted () {
+    this.categoryProducts = this.allProducts.get(this.categoryId)
   }
 }
 </script>

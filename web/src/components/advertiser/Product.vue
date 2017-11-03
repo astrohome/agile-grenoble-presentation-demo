@@ -1,6 +1,6 @@
 <template>
   <section class="section">
-      <router-link :to="-1" replace>Retour</router-link>
+      <router-link :to="{name: 'one-category', params: {categoryId: categoryId}}">Retour</router-link>
       <br>
       <div class="container">
           <h1 class="title">{{product.name}}</h1>
@@ -9,7 +9,7 @@
           </h2>
           <div class="columns">
             <div class="column">
-                <img :src="getPic(id)">
+                <img :src="getPic(productId)">
                 <br>
                 <span class="price">{{product.price}}</span>
             </div>
@@ -26,9 +26,14 @@ import axios from 'axios'
 
 export default {
   props: {
-    id: Number,
-    required: true,
-    default: 100
+    productId: {
+      type: Number,
+      required: true
+    },
+    categoryId: {
+      type: Number,
+      required: true
+    }
   },
   data () {
     return {
@@ -44,12 +49,12 @@ export default {
   },
   methods: {
     getPic (productId) {
-      return require('@/assets/advertiser/' + productId + '.jpg')
+      return require('@/assets/advertiser/' + this.productId + '.jpg')
     }
   },
   mounted () {
-    this.product = this.products.get(this.id)
-    axios.get('/api/advertiser-tracker/view?productid=' + this.id + '&userid=' + 5)
+    this.product = this.products.get(this.productId)
+    axios.get('/api/advertiser-tracker/view?productid=' + this.productId + '&userid=' + 5)
   }
 }
 </script>

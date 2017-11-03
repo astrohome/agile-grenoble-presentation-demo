@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import HelloWorld from '@/components/HelloWorld'
 import ListCategories from '@/components/advertiser/ListCategories'
 import Category from '@/components/advertiser/Category'
 import Product from '@/components/advertiser/Product'
@@ -11,27 +10,24 @@ export default new Router({
   mode: 'history',
   routes: [
     {
-      path: '/',
-      name: 'Hello',
-      component: HelloWorld
+      path: '/advertiser',
+      name: 'index-advertiser',
+      component: ListCategories
     },
     {
-      path: '/category/:id',
-      component: ListCategories,
-      children: [
-        {
-          path: '',
-          name: 'one-category',
-          component: Category,
-          props: true
-        }
-      ]
+      path: '/advertiser/category/:categoryId',
+      name: 'one-category',
+      component: Category,
+      props: (route) => ({
+        categoryId: parseInt(route.params.categoryId)
+      })
     },
     {
-      path: '/product/:id',
+      path: '/advertiser/category/:categoryId/product/:productId',
       name: 'one-product',
       component: Product,
-      props: (route) => ({id: parseInt(route.params.id)})
+      props: (route) => ({productId: parseInt(route.params.productId),
+        categoryId: parseInt(route.params.categoryId)})
     }
   ]
 })

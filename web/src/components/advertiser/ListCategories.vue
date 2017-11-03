@@ -1,12 +1,11 @@
 <template>
-  <span>
+  <div>
       <div v-bind:key="category.id" v-for="category in categories">
           <li>
-              <router-link :to="{ name: 'one-category', params: { id: category.id }}">{{category.name}}</router-link>
+              <router-link :to="{ name: 'one-category', params: { categoryId: category.id }}">{{category.name}}</router-link>
           </li>
       </div>
-      <router-view></router-view>
-  </span>
+  </div>
 </template>
 
 <script>
