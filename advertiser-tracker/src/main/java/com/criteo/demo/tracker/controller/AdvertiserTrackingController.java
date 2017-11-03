@@ -24,7 +24,7 @@ public class AdvertiserTrackingController {
         this.objectMapper = objectMapper;
     }
 
-    @RequestMapping("/api/view")
+    @RequestMapping("/api/advertiser-tracker/view")
     public void click(@RequestParam(name = "userid") int userId, @RequestParam(name = "productid") int productId)
             throws JsonProcessingException {
         log.debug("user_id: " + userId);

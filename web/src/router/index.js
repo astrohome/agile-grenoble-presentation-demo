@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import HelloWorld from '@/components/HelloWorld'
 import ListCategories from '@/components/advertiser/ListCategories'
 import Category from '@/components/advertiser/Category'
+import Product from '@/components/advertiser/Product'
 
 Vue.use(Router)
 
@@ -29,7 +30,8 @@ export default new Router({
     {
       path: '/product/:id',
       name: 'one-product',
-      component: HelloWorld
+      component: Product,
+      props: (route) => ({id: parseInt(route.params.id)})
     }
   ]
 })

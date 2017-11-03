@@ -1,0 +1,16 @@
+@import "~bulma/sass/utilities/initial-variables";
+
+$criteo-color:  #ff9300;
+$primary:       $criteo-color;
+$dimensions:    400;
+
+@import "~bulma/bulma";
+
+.price {
+    color: $red;
+    display: inline-block;
+    font-size: 25px;
+    font-weight: 700;
+    line-height: 30px;
+    margin: 0 0 0 10px;
+}

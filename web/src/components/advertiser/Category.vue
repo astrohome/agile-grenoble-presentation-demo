@@ -1,15 +1,24 @@
 <template>
-  <section v-cloak>
-      Products:
-        <div v-bind:key="product.id" v-for="product in products.get(id)">            
-            <div class="product-img">
-                <img :src="getPic(product.id)">
-            </div>            
+  <div v-cloak>
+    <div v-bind:key="product.id" v-for="product in products.get(id)">
+      <section class="section">
+      <article class="media">
+        <figure class="media-left">
+          <p class="image is-400x400">
+            <img :src="getPic(product.id)">
+          </p>
+        </figure>
+        <div class="media-content">
+          <div class="content">
             <router-link :to="{ name: 'one-product', params: { id: product.id }}">
-                {{ product.name }}
+              {{ product.name }}
             </router-link>
+          </div>
         </div>
-  </section>
+      </article>
+      </section>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -48,16 +57,3 @@ export default {
 }
 </script>
 
-<style scoped>
-.product-img {
-    width: 400px;
-    height: 400px;
-}
-
-.product-img img {
-max-width:100%;
-max-height:100%;
-height: auto;
-width:auto;
-}
-</style>
