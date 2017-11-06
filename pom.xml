@@ -16,6 +16,7 @@
     <modules>
         <module>advertiser-tracker</module>
         <module>common</module>
+        <module>publisher-tracker</module>
     </modules>
 
 </project>
