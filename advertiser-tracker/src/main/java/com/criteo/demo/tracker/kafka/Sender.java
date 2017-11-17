@@ -1,5 +1,6 @@
 package com.criteo.demo.tracker.kafka;
 
+import com.criteo.demo.common.model.KafkaProductViewMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    url: "jdbc:mysql://localhost:3306/config"
+    username: "criteo"
+    password: "criteo"
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: "org.hibernate.dialect.H2Dialect"
+  kafka:
+    bootstrap-servers: "localhost:9092"
+    consumer:
+      group-id: "foo"
+      auto-offset-reset: "earliest"
+
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+    com:
+      criteo:
+        demo: TRACE
+
+kafka:
+  topic:
+    view-product: view_product

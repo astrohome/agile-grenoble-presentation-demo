@@ -16,18 +16,29 @@ services:
       MYSQL_PASSWORD: criteo
       MYSQL_DATABASE: config
 
+  zookeeper:
+    image: wurstmeister/zookeeper
+    hostname: zookeeper
+    networks:
+      - dev
+    ports:
+      - "2181:2181"
   kafka:
-    container_name: kafka-zookeeper
-    image: spotify/kafka
+    image: wurstmeister/kafka
+    hostname: kafka
+    depends_on:
+      - zookeeper
     ports:
       - "9092:9092"
-      - "2181:2181"
     networks:
       - dev
     environment:
       KAFKA_ADVERTISED_HOST_NAME: localhost
-      CONSUMER_THREADS: 1
-      TOPICS: "view_product,show_banner"
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "view_product:1:1,show_banner:1:1"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
   cassandra:
     container_name: cassandra

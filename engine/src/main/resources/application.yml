@@ -1,0 +1,14 @@
+spring:
+  data:
+    cassandra:
+      contact-points: "localhost"
+      keyspace-name: "stats"
+      port: 9042
+  kafka:
+    bootstrap-servers: "localhost:9092"
+    consumer:
+      group-id: "engine"
+
+kafka:
+  topic:
+    view-product: view_product
