@@ -14,7 +14,7 @@
 	<packaging>jar</packaging>
 
 	<name>advertiser-tracker</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Advertiser Tracker</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -57,24 +57,110 @@
         </dependency>
     </dependencies>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>${spring-cloud.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+
+			<plugin>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.23.0</version>
+				<configuration>
+					<autoCreateCustomNetworks>true</autoCreateCustomNetworks>
+					<images>
+						<image>
+							<name>advertiser-tracker:${project.version}</name>
+							<alias>advertiser-tracker</alias>
+							<build>
+								<from>openjdk:latest</from>
+								<assembly>
+									<descriptorRef>artifact</descriptorRef>
+								</assembly>
+								<cmd>java -jar maven/${project.name}-${project.version}.jar</cmd>
+							</build>
+							<run>
+								<ports>
+									<port>8080:8080</port>
+								</ports>
+								<dependsOn>
+									<container>kafka</container>
+								</dependsOn>
+								<wait>
+									<log>Started AdvertiserTrackerApplication</log>
+								</wait>
+								<network>
+									<mode>custom</mode>
+									<name>${artifactId}</name>
+									<alias>advertiser-tracker</alias>
+								</network>
+							</run>
+						</image>
+						<image>
+							<name>wurstmeister/zookeeper</name>
+							<alias>zookeeper</alias>
+							<run>
+								<hostname>zookeeper</hostname>
+								<ports>
+									<port>2181:2181</port>
+								</ports>
+								<wait>
+									<log>binding to port 0.0.0.0/0.0.0.0:2181</log>
+								</wait>
+								<network>
+									<mode>custom</mode>
+									<name>${artifactId}</name>
+									<alias>zookeeper</alias>
+								</network>
+							</run>
+						</image>
+						<image>
+							<name>wurstmeister/kafka</name>
+							<alias>kafka</alias>
+							<run>
+								<hostname>kafka</hostname>
+								<dependsOn>
+									<container>zookeeper</container>
+								</dependsOn>
+								<env>
+									<KAFKA_ADVERTISED_HOST_NAME>localhost</KAFKA_ADVERTISED_HOST_NAME>:
+									<KAFKA_ADVERTISED_PORT>9092</KAFKA_ADVERTISED_PORT>:
+									<KAFKA_ZOOKEEPER_CONNECT>zookeeper:2181</KAFKA_ZOOKEEPER_CONNECT>:
+									<KAFKA_CREATE_TOPICS>"view_product:1:1"</KAFKA_CREATE_TOPICS>
+								</env>
+								<ports>
+									<port>9092:9092</port>
+								</ports>
+								<volumes>
+									<bind>
+										<volume>/var/run/docker.sock:/var/run/docker.sock</volume>
+									</bind>
+								</volumes>
+								<network>
+									<mode>custom</mode>
+									<name>${artifactId}</name>
+									<alias>kafka</alias>
+								</network>
+								<wait>
+									<time>15000</time>
+								</wait>
+							</run>
+						</image>
+					</images>
+				</configuration>
+				<executions>
+					<execution>
+						<id>docker:start</id>
+						<phase>install</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 
