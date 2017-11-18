@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: "jdbc:mysql://localhost:3306/config"
+    url: "jdbc:mysql://mysql:3306/config"
     username: "criteo"
     password: "criteo"
   jpa:
@@ -11,7 +11,7 @@ spring:
       hibernate:
         dialect: "org.hibernate.dialect.H2Dialect"
   kafka:
-    bootstrap-servers: "localhost:9092"
+    bootstrap-servers: "kafka:9092"
     consumer:
       group-id: "foo"
       auto-offset-reset: "earliest"

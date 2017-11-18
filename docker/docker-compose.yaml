@@ -20,7 +20,9 @@ services:
     image: wurstmeister/zookeeper
     hostname: zookeeper
     networks:
-      - dev
+      dev:
+        aliases:
+          - zookeeper
     ports:
       - "2181:2181"
   kafka:
@@ -31,11 +33,13 @@ services:
     ports:
       - "9092:9092"
     networks:
-      - dev
+      dev:
+        aliases:
+          - kafka
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_ADVERTISED_HOST_NAME: kafka
       KAFKA_ADVERTISED_PORT: 9092
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/kafka_local
       KAFKA_CREATE_TOPICS: "view_product:1:1,show_banner:1:1"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
