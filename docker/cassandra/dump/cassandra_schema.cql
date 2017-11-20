@@ -3,5 +3,5 @@ CREATE TABLE IF NOT EXISTS stats.product_view (
   user_id int,
   product_id int,
   time timestamp,
-  PRIMARY KEY ((user_id, product_id), time)
+  PRIMARY KEY (user_id, product_id, time)
 );
