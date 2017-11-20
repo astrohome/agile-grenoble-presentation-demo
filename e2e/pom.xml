@@ -138,6 +138,31 @@
 								</network>
 							</run>
 						</image>
+                        <image>
+                            <name>engine:${project.version}</name>
+                            <alias>engine</alias>
+                            <run>
+                                <ports>
+                                    <port>8081:8081</port>
+                                </ports>
+                                <dependsOn>
+                                    <container>kafka</container>
+                                    <container>cassandra</container>
+                                </dependsOn>
+                                <wait>
+                                    <log>Started EngineApplication</log>
+                                    <time>${WAIT_TIMEOUT}</time>
+                                </wait>
+                                <network>
+                                    <mode>custom</mode>
+                                    <name>${project.artifactId}</name>
+                                    <alias>advertiser-tracker</alias>
+                                </network>
+                                <log>
+                                    <color>red</color>
+                                </log>
+                            </run>
+                        </image>
 						<image>
 							<name>wurstmeister/zookeeper</name>
 							<alias>zookeeper</alias>

@@ -23,7 +23,7 @@ public class AdvertiserTrackerScenario {
 
     }
 
-    @Then("^I my system should store the following statistics$")
+    @Then("^my system should store the following statistics$")
     public void i_my_system_should_store_the_following_statistics(DataTable arg1) throws Throwable {
         // Write code here that turns the phrase above into concrete actions
         // For automatic transformation, change DataTable to one of
