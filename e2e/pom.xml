@@ -9,12 +9,12 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>advertiser-tracker</artifactId>
+    <artifactId>e2e</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>advertiser-tracker</name>
-    <description>Advertiser Tracker</description>
+    <name>end2end</name>
+    <description>End 2 End tests</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
