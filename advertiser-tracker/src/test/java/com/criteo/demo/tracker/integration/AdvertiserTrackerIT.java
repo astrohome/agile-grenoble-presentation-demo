@@ -99,7 +99,7 @@ public class AdvertiserTrackerIT {
         };
         executor.scheduleAtFixedRate(task, 1, 1, TimeUnit.SECONDS);
 
-        Boolean gotMessage = result.get(30, TimeUnit.SECONDS);
+        Boolean gotMessage = result.get(10, TimeUnit.SECONDS);
         if (gotMessage) {
             assertNotNull(this.kafkaMessage);
             assertEquals("Userid should be the same as requested", USER_ID, this.kafkaMessage.getUserId());

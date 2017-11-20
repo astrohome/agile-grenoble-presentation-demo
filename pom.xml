@@ -18,7 +18,7 @@
     </parent>
 
     <properties>
-
+        <WAIT_TIMEOUT>30000</WAIT_TIMEOUT>
     </properties>
 
     <modules>

@@ -114,8 +114,8 @@
 									<container>kafka</container>
 								</dependsOn>
 								<wait>
-									<log>Started AdvertiserTrackerApplication</log>
-									<time>30000</time>
+									<log>Started EngineApplication</log>
+									<time>${WAIT_TIMEOUT}</time>
 								</wait>
 								<network>
 									<mode>custom</mode>
@@ -134,7 +134,7 @@
 								</ports>
 								<wait>
 									<log>Listening for thrift clients...</log>
-									<time>30000</time>
+									<time>${WAIT_TIMEOUT}</time>
 								</wait>
 								<network>
 									<mode>custom</mode>
@@ -153,7 +153,7 @@
 								</ports>
 								<wait>
 									<log>binding to port 0.0.0.0/0.0.0.0:2181</log>
-									<time>30000</time>
+									<time>${WAIT_TIMEOUT}</time>
 								</wait>
 								<network>
 									<mode>custom</mode>
@@ -191,7 +191,7 @@
 								</network>
 								<wait>
 									<log>view_product-0 starts at Leader Epoch 0</log>
-									<time>30000</time>
+									<time>${WAIT_TIMEOUT}</time>
 								</wait>
 								<log>
 									<color>cyan</color>
