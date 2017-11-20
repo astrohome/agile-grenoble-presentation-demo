@@ -1,8 +1,5 @@
 package com.criteo.demo.engine.kafka;
 
-import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-
 import com.criteo.demo.common.model.KafkaProductViewMessage;
 import com.criteo.demo.engine.dao.ProductViewRepository;
 import com.criteo.demo.engine.model.ProductView;
@@ -13,18 +10,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
+
 @Component
 public class Receiver {
 
-  @Autowired
-  private ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
 
-  @Autowired
-  private ProductViewRepository productViewRepository;
+  private final ProductViewRepository productViewRepository;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Receiver.class);
 
   private CountDownLatch latch = new CountDownLatch(1);
+
+  @Autowired
+  public Receiver(ObjectMapper objectMapper, ProductViewRepository productViewRepository) {
+    this.objectMapper = objectMapper;
+    this.productViewRepository = productViewRepository;
+  }
 
   public CountDownLatch getLatch() {
     return latch;
