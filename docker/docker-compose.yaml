@@ -5,7 +5,6 @@ services:
     container_name: mysql
     image: mariadb
     hostname: mysql
-    restart: always
     ports:
       - "3306:3306"
     networks:

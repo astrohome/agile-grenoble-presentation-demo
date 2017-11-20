@@ -1,65 +1,114 @@
 package com.criteo.demo.tracker.integration;
 
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
+import com.criteo.demo.common.model.KafkaProductViewMessage;
+import com.criteo.demo.common.utils.HttpUtils;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.json.JsonTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.annotation.EnableKafka;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.config.KafkaListenerContainerFactory;
+import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.*;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@JsonTest
+@ActiveProfiles({ "test" })
+@ContextConfiguration(loader=AnnotationConfigContextLoader.class)
 public class AdvertiserTrackerIT {
 
-    @Test
-    public void testTracker() throws Exception{
-        String url = "http://localhost:3000/advertiser/";
+    /**
+     * Countdown latch
+     */
+    private CountDownLatch lock = new CountDownLatch(1);
 
-  /*      HttpClient client = HttpClientBuilder.create().build();
-        HttpGet request = new HttpGet(url);
+    @Autowired
+    private JacksonTester<KafkaProductViewMessage> json;
 
-        request.addHeader("User-Agent", HttpHeaders.USER_AGENT);
-        HttpResponse response = client.execute(request);
-        System.out.println("Response Code : "
-                + response.getStatusLine().getStatusCode());
+    private static final int USER_ID = 5;
+    private static final int PRODUCT_ID = 101;
 
-        BufferedReader rd = new BufferedReader(
-                new InputStreamReader(response.getEntity().getContent()));
+    private KafkaProductViewMessage kafkaMessage;
+    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
-        StringBuffer result = new StringBuffer();
-        String line = "";
-        while ((line = rd.readLine()) != null) {
-            result.append(line);
-        }*/
-        String request = getRequest(url);
+    @Configuration
+    @EnableKafka
+    static class ContextConfiguration {
+        @Bean
+        public KafkaListenerContainerFactory<?> kafkaListenerContainerFactory() {
+            ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+            factory.setConsumerFactory(consumerFactory());
+            factory.setBatchListener(true);
+            return factory;
+        }
 
+        @Bean
+        public ConsumerFactory<String, String> consumerFactory() {
+            return new DefaultKafkaConsumerFactory<>(consumerConfigs());
+        }
 
-        assert(true);
+        @Bean
+        public Map<String, Object> consumerConfigs() {
+            Map<String, Object> props = new HashMap<>();
+            props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:9092");
+            props.put(ConsumerConfig.GROUP_ID_CONFIG, "1");
+            props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+            props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+            return props;
+        }
     }
 
-    private String getRequest(String url) throws IOException {
-        URL obj = new URL(url);
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-        try {
-            con.setRequestMethod("GET");
-            int responseCode = con.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
-                    String inputLine;
-                    StringBuilder response = new StringBuilder();
-                    while ((inputLine = in.readLine()) != null) {
-                        response.append(inputLine);
-                    }
-                    return response.toString();
-                }
+    @Test
+    public void dummyTest() throws Exception {
+
+        lock.await(5, TimeUnit.SECONDS);
+
+        String url = "http://localhost:8080/api/advertiser-tracker/view?userid=" +
+                USER_ID + "&productid=" + PRODUCT_ID;
+
+        int send = HttpUtils.send(url);
+        assertEquals("Response code should be 200", 200, send);
+
+        CompletableFuture<Boolean> result = new CompletableFuture<>();
+
+        Runnable task = () -> {
+            if (kafkaMessage != null) {
+                result.complete(true);
+                executor.shutdown();
             }
-            return "";
-        } finally {
-            con.disconnect();
+        };
+        executor.scheduleAtFixedRate(task, 1, 1, TimeUnit.SECONDS);
+
+        Boolean gotMessage = result.get(30, TimeUnit.SECONDS);
+        if (gotMessage) {
+            assertNotNull(this.kafkaMessage);
+            assertEquals("Userid should be the same as requested", USER_ID, this.kafkaMessage.getUserId());
+            assertEquals("Productid should be the same as requested", PRODUCT_ID, this.kafkaMessage.getProductId());
         }
+    }
+
+    @KafkaListener(topics = "view_product")
+    public void receive(String payload) throws IOException {
+        this.kafkaMessage = this.json.parse(payload).getObject();
     }
 }
