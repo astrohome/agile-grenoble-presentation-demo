@@ -23,8 +23,6 @@
         <skipTests>false</skipTests>
         <skipITs>${skipTests}</skipITs>
         <skipUTs>${skipTests}</skipUTs>
-        <kafka.dynamic_port>14143</kafka.dynamic_port>
-        <cluster.ip>localhost</cluster.ip>
     </properties>
 
     <dependencies>
@@ -61,11 +59,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.3</version>
-        </dependency>
-        <dependency>
             <groupId>info.cukes</groupId>
             <artifactId>cucumber-picocontainer</artifactId>
             <scope>test</scope>
@@ -93,14 +86,6 @@
 
 	<build>
 		<plugins>
-	<!--		<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>-->
-            <plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -114,16 +99,6 @@
                 <configuration>
                     <skipTests>${skipTests}</skipTests>
                     <skipITs>${skipITs}</skipITs>
-                    <systemProperties>
-                        <property>
-                            <name>KAFKA_DYNAMIC_PORT</name>
-                            <value>${kafka.dynamic_port}</value>
-                        </property>
-                        <property>
-                            <name>CLUSTER_IP</name>
-                            <value>${cluster.ip}</value>
-                        </property>
-                    </systemProperties>
                 </configuration>
                 <executions>
                     <execution>
@@ -145,13 +120,6 @@
 						<image>
 							<name>advertiser-tracker:${project.version}</name>
 							<alias>advertiser-tracker</alias>
-							<!--<build>
-								<from>openjdk:latest</from>
-								<assembly>
-									<descriptorRef>artifact</descriptorRef>
-								</assembly>
-								<cmd>java -jar maven/${project.name}-${project.version}.jar</cmd>
-							</build>-->
 							<run>
 								<ports>
 									<port>8080:8080</port>
@@ -161,7 +129,7 @@
 								</dependsOn>
 								<wait>
 									<log>Started AdvertiserTrackerApplication</log>
-                                    <time>30000</time>
+                                    <time>${WAIT_TIMEOUT}</time>
 								</wait>
 								<network>
 									<mode>custom</mode>
@@ -180,6 +148,7 @@
 								</ports>
 								<wait>
 									<log>binding to port 0.0.0.0/0.0.0.0:2181</log>
+                                    <time>${WAIT_TIMEOUT}</time>
 								</wait>
 								<network>
 									<mode>custom</mode>
@@ -217,13 +186,32 @@
 								</network>
 								<wait>
 									<log>view_product-0 starts at Leader Epoch 0</log>
-									<time>20000</time>
+                                    <time>${WAIT_TIMEOUT}</time>
 								</wait>
 							<log>
 									<color>cyan</color>
 								</log>
 							</run>
 						</image>
+                        <image>
+                            <name>criteo/cassandra</name>
+                            <alias>cassandra</alias>
+                            <run>
+                                <hostname>cassandra</hostname>
+                                <ports>
+                                    <port>9042:9042</port>
+                                </ports>
+                                <wait>
+                                    <log>Listening for thrift clients...</log>
+                                    <time>${WAIT_TIMEOUT}</time>
+                                </wait>
+                                <network>
+                                    <mode>custom</mode>
+                                    <name>${project.artifactId}</name>
+                                    <alias>cassandra</alias>
+                                </network>
+                            </run>
+                        </image>
 					</images>
 				</configuration><!-- Connect start/stop to pre- and
                          post-integration-test phase, respectively if you want to start

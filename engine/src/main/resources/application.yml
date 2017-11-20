@@ -1,11 +1,11 @@
 spring:
   data:
     cassandra:
-      contact-points: "localhost"
+      contact-points: "cassandra"
       keyspace-name: "stats"
       port: 9042
   kafka:
-    bootstrap-servers: "localhost:9092"
+    bootstrap-servers: "kafka:9092"
     consumer:
       group-id: "engine"
 
