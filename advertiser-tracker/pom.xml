@@ -23,8 +23,6 @@
         <skipTests>false</skipTests>
         <skipITs>${skipTests}</skipITs>
         <skipUTs>${skipTests}</skipUTs>
-        <kafka.dynamic_port>14143</kafka.dynamic_port>
-        <cluster.ip>localhost</cluster.ip>
     </properties>
 
     <dependencies>
@@ -40,13 +38,9 @@
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.kafka</groupId>
+            <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
             <version>1.0.0</version>
         </dependency>
@@ -61,29 +55,20 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.3</version>
-        </dependency>
-        <dependency>
             <groupId>com.criteo.demo</groupId>
             <artifactId>common</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <skipTests>${skipUTs}</skipTests>
                 </configuration>
@@ -95,16 +80,6 @@
                 <configuration>
                     <skipTests>${skipTests}</skipTests>
                     <skipITs>${skipITs}</skipITs>
-                    <systemProperties>
-                        <property>
-                            <name>KAFKA_DYNAMIC_PORT</name>
-                            <value>${kafka.dynamic_port}</value>
-                        </property>
-                        <property>
-                            <name>CLUSTER_IP</name>
-                            <value>${cluster.ip}</value>
-                        </property>
-                    </systemProperties>
                 </configuration>
                 <executions>
                     <execution>
@@ -118,94 +93,94 @@
 
             <plugin>
                 <groupId>io.fabric8</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-				<version>0.23.0</version>
-				<configuration>
-					<autoCreateCustomNetworks>true</autoCreateCustomNetworks>
-					<images>
-						<image>
-							<name>advertiser-tracker:${project.version}</name>
-							<alias>advertiser-tracker</alias>
-							<build>
-								<from>openjdk:latest</from>
-								<assembly>
-									<descriptorRef>artifact</descriptorRef>
-								</assembly>
-								<cmd>java -jar maven/${project.name}-${project.version}.jar</cmd>
-							</build>
-							<run>
-								<ports>
-									<port>8080:8080</port>
-								</ports>
-								<dependsOn>
-									<container>kafka</container>
-								</dependsOn>
-								<wait>
-									<log>Started AdvertiserTrackerApplication</log>
-								</wait>
-								<network>
-									<mode>custom</mode>
-									<name>${project.artifactId}</name>
-									<alias>advertiser-tracker</alias>
-								</network>
-							</run>
-						</image>
-						<image>
-							<name>wurstmeister/zookeeper</name>
-							<alias>zookeeper</alias>
-							<run>
-								<hostname>zookeeper</hostname>
-								<ports>
-									<port>2181:2181</port>
-								</ports>
-								<wait>
-									<log>binding to port 0.0.0.0/0.0.0.0:2181</log>
-								</wait>
-								<network>
-									<mode>custom</mode>
-									<name>${project.artifactId}</name>
-									<alias>zookeeper</alias>
-								</network>
-							</run>
-						</image>
-						<image>
-							<name>wurstmeister/kafka</name>
-							<alias>kafka</alias>
-							<run>
-								<hostname>kafka</hostname>
-								<dependsOn>
-									<container>zookeeper</container>
-								</dependsOn>
-								<env>
-									<KAFKA_ADVERTISED_HOST_NAME>kafka</KAFKA_ADVERTISED_HOST_NAME>:
-									<KAFKA_ADVERTISED_PORT>9092</KAFKA_ADVERTISED_PORT>:
-									<KAFKA_ZOOKEEPER_CONNECT>zookeeper:2181/kafka_local</KAFKA_ZOOKEEPER_CONNECT>:
-									<KAFKA_CREATE_TOPICS>view_product:1:1</KAFKA_CREATE_TOPICS>
-								</env>
-								<ports>
-									<port>9092:9092</port>
-								</ports>
-								<volumes>
-									<bind>
-										<volume>/var/run/docker.sock:/var/run/docker.sock</volume>
-									</bind>
-								</volumes>
-								<network>
-									<mode>custom</mode>
-									<name>${project.artifactId}</name>
-									<alias>kafka</alias>
-								</network>
-								<wait>
-									<log>view_product-0 starts at Leader Epoch 0</log>
-									<time>20000</time>
-								</wait>
-							<log>
-									<color>cyan</color>
-								</log>
-							</run>
-						</image>
-					</images>
-				</configuration><!-- Connect start/stop to pre- and
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.23.0</version>
+                <configuration>
+                    <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
+                    <images>
+                        <image>
+                            <name>advertiser-tracker:${project.version}</name>
+                            <alias>advertiser-tracker</alias>
+                            <build>
+                                <from>openjdk:latest</from>
+                                <assembly>
+                                    <descriptorRef>artifact</descriptorRef>
+                                </assembly>
+                                <cmd>java -jar maven/${project.name}-${project.version}.jar</cmd>
+                            </build>
+                            <run>
+                                <ports>
+                                    <port>8080:8080</port>
+                                </ports>
+                                <dependsOn>
+                                    <container>kafka</container>
+                                </dependsOn>
+                                <wait>
+                                    <log>Started AdvertiserTrackerApplication</log>
+                                </wait>
+                                <network>
+                                    <mode>custom</mode>
+                                    <name>${project.artifactId}</name>
+                                    <alias>advertiser-tracker</alias>
+                                </network>
+                            </run>
+                        </image>
+                        <image>
+                            <name>wurstmeister/zookeeper</name>
+                            <alias>zookeeper</alias>
+                            <run>
+                                <hostname>zookeeper</hostname>
+                                <ports>
+                                    <port>2181:2181</port>
+                                </ports>
+                                <wait>
+                                    <log>binding to port 0.0.0.0/0.0.0.0:2181</log>
+                                </wait>
+                                <network>
+                                    <mode>custom</mode>
+                                    <name>${project.artifactId}</name>
+                                    <alias>zookeeper</alias>
+                                </network>
+                            </run>
+                        </image>
+                        <image>
+                            <name>wurstmeister/kafka</name>
+                            <alias>kafka</alias>
+                            <run>
+                                <hostname>kafka</hostname>
+                                <dependsOn>
+                                    <container>zookeeper</container>
+                                </dependsOn>
+                                <env>
+                                    <KAFKA_ADVERTISED_HOST_NAME>kafka</KAFKA_ADVERTISED_HOST_NAME>:
+                                    <KAFKA_ADVERTISED_PORT>9092</KAFKA_ADVERTISED_PORT>:
+                                    <KAFKA_ZOOKEEPER_CONNECT>zookeeper:2181/kafka_local</KAFKA_ZOOKEEPER_CONNECT>:
+                                    <KAFKA_CREATE_TOPICS>view_product:1:1</KAFKA_CREATE_TOPICS>
+                                </env>
+                                <ports>
+                                    <port>9092:9092</port>
+                                </ports>
+                                <volumes>
+                                    <bind>
+                                        <volume>/var/run/docker.sock:/var/run/docker.sock</volume>
+                                    </bind>
+                                </volumes>
+                                <network>
+                                    <mode>custom</mode>
+                                    <name>${project.artifactId}</name>
+                                    <alias>kafka</alias>
+                                </network>
+                                <wait>
+                                    <log>view_product-0 starts at Leader Epoch 0</log>
+                                    <time>20000</time>
+                                </wait>
+                                <log>
+                                    <color>cyan</color>
+                                </log>
+                            </run>
+                        </image>
+                    </images>
+                </configuration><!-- Connect start/stop to pre- and
                          post-integration-test phase, respectively if you want to start
                          your docker containers during integration tests -->
                 <executions>
@@ -227,24 +202,7 @@
                         </goals>
                     </execution>
                 </executions>
-				<!--<executions>
-					<execution>
-						<id>docker:start</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>build</goal>
-							<goal>start</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>docker:stop</id>
-						<phase>post-integration-test</phase>
-						<goals>
-							<goal>stop</goal>
-						</goals>
-					</execution>
-				</executions>-->
-			</plugin>
+            </plugin>
 
         </plugins>
     </build>

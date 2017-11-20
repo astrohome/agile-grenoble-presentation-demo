@@ -20,6 +20,9 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
+		<skipTests>false</skipTests>
+		<skipITs>${skipTests}</skipITs>
+		<skipUTs>${skipTests}</skipUTs>
 	</properties>
 
 	<dependencies>
@@ -35,12 +38,6 @@
 			<groupId>org.apache.kafka</groupId>
 			<artifactId>kafka-clients</artifactId>
 			<version>1.0.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -68,6 +65,163 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<skipTests>${skipUTs}</skipTests>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<configuration>
+					<skipTests>${skipTests}</skipTests>
+					<skipITs>${skipITs}</skipITs>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.23.0</version>
+				<configuration>
+					<autoCreateCustomNetworks>true</autoCreateCustomNetworks>
+					<images>
+						<image>
+							<name>engine:${project.version}</name>
+							<alias>engine</alias>
+							<build>
+								<from>openjdk:latest</from>
+								<assembly>
+									<descriptorRef>artifact</descriptorRef>
+								</assembly>
+								<cmd>java -jar maven/${project.name}-${project.version}.jar</cmd>
+							</build>
+							<run>
+								<ports>
+									<port>8080:8080</port>
+								</ports>
+								<dependsOn>
+									<container>kafka</container>
+								</dependsOn>
+								<wait>
+									<log>Started AdvertiserTrackerApplication</log>
+									<time>30000</time>
+								</wait>
+								<network>
+									<mode>custom</mode>
+									<name>${project.artifactId}</name>
+									<alias>advertiser-tracker</alias>
+								</network>
+							</run>
+						</image>
+						<image>
+							<name>criteo/cassandra</name>
+							<alias>cassandra</alias>
+							<run>
+								<hostname>cassandra</hostname>
+								<ports>
+									<port>9042:9042</port>
+								</ports>
+								<wait>
+									<log>Listening for thrift clients...</log>
+									<time>30000</time>
+								</wait>
+								<network>
+									<mode>custom</mode>
+									<name>${project.artifactId}</name>
+									<alias>zookeeper</alias>
+								</network>
+							</run>
+						</image>
+						<image>
+							<name>wurstmeister/zookeeper</name>
+							<alias>zookeeper</alias>
+							<run>
+								<hostname>zookeeper</hostname>
+								<ports>
+									<port>2181:2181</port>
+								</ports>
+								<wait>
+									<log>binding to port 0.0.0.0/0.0.0.0:2181</log>
+									<time>30000</time>
+								</wait>
+								<network>
+									<mode>custom</mode>
+									<name>${project.artifactId}</name>
+									<alias>zookeeper</alias>
+								</network>
+							</run>
+						</image>
+						<image>
+							<name>wurstmeister/kafka</name>
+							<alias>kafka</alias>
+							<run>
+								<hostname>kafka</hostname>
+								<dependsOn>
+									<container>zookeeper</container>
+								</dependsOn>
+								<env>
+									<KAFKA_ADVERTISED_HOST_NAME>kafka</KAFKA_ADVERTISED_HOST_NAME>:
+									<KAFKA_ADVERTISED_PORT>9092</KAFKA_ADVERTISED_PORT>:
+									<KAFKA_ZOOKEEPER_CONNECT>zookeeper:2181/kafka_local</KAFKA_ZOOKEEPER_CONNECT>:
+									<KAFKA_CREATE_TOPICS>view_product:1:1</KAFKA_CREATE_TOPICS>
+								</env>
+								<ports>
+									<port>9092:9092</port>
+								</ports>
+								<volumes>
+									<bind>
+										<volume>/var/run/docker.sock:/var/run/docker.sock</volume>
+									</bind>
+								</volumes>
+								<network>
+									<mode>custom</mode>
+									<name>${project.artifactId}</name>
+									<alias>kafka</alias>
+								</network>
+								<wait>
+									<log>view_product-0 starts at Leader Epoch 0</log>
+									<time>30000</time>
+								</wait>
+								<log>
+									<color>cyan</color>
+								</log>
+							</run>
+						</image>
+					</images>
+				</configuration><!-- Connect start/stop to pre- and
+                         post-integration-test phase, respectively if you want to start
+                         your docker containers during integration tests -->
+				<executions>
+					<execution>
+						<id>start</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<!-- "build" should be used to create the images with the
+                                 artifact -->
+							<goal>build</goal>
+							<goal>start</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>stop</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>stop</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
