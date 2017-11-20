@@ -13,13 +13,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.config.java.AbstractCassandraConfiguration;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
@@ -32,6 +28,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -97,16 +94,6 @@ public class EngineApplicationIT {
 		public CassandraTemplate cassandraTemplate(Session session) {
 			return new CassandraTemplate(session);
 		}
-
-		@Override
-		public String[] getEntityBasePackages() {
-			return new String[] { ProductView.class.getPackage().getName() };
-		}
-
-		@Override
-		public SchemaAction getSchemaAction() {
-			return SchemaAction.RECREATE;
-		}
 	}
 
 	@Test
@@ -118,7 +105,7 @@ public class EngineApplicationIT {
 
 		CompletableFuture<ProductView> result = new CompletableFuture<>();
 
-		Key key = new Key(USER_ID, PRODUCT_ID, time);
+		Key key = new Key(USER_ID, PRODUCT_ID, new Date(time));
 		Runnable task = () -> {
 
 			ProductView one = productViewRepository.findOne(key);
@@ -133,5 +120,6 @@ public class EngineApplicationIT {
 		assertNotNull(productView);
 		assertEquals(USER_ID, (long) productView.getKey().getUserId());
 		assertEquals(PRODUCT_ID, (long) productView.getKey().getProductId());
+		assertEquals(new Date(time), productView.getKey().getTimestamp());
 	}
 }

@@ -33,14 +33,9 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @JsonTest
-@ActiveProfiles({ "test" })
-@ContextConfiguration(loader=AnnotationConfigContextLoader.class)
+@ActiveProfiles({"test"})
+@ContextConfiguration(loader = AnnotationConfigContextLoader.class)
 public class AdvertiserTrackerIT {
-
-    /**
-     * Countdown latch
-     */
-    private CountDownLatch lock = new CountDownLatch(1);
 
     @Autowired
     private JacksonTester<KafkaProductViewMessage> json;
@@ -48,7 +43,7 @@ public class AdvertiserTrackerIT {
     private static final int USER_ID = 5;
     private static final int PRODUCT_ID = 101;
 
-    private KafkaProductViewMessage kafkaMessage;
+    private CompletableFuture<KafkaProductViewMessage> result = new CompletableFuture<>();
     private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
     @Configuration
@@ -79,9 +74,7 @@ public class AdvertiserTrackerIT {
     }
 
     @Test
-    public void dummyTest() throws Exception {
-
-        lock.await(5, TimeUnit.SECONDS);
+    public void testKafkaFlux() throws Exception {
 
         String url = "http://localhost:8080/api/advertiser-tracker/view?userid=" +
                 USER_ID + "&productid=" + PRODUCT_ID;
@@ -89,26 +82,14 @@ public class AdvertiserTrackerIT {
         int send = HttpUtils.send(url);
         assertEquals("Response code should be 200", 200, send);
 
-        CompletableFuture<Boolean> result = new CompletableFuture<>();
-
-        Runnable task = () -> {
-            if (kafkaMessage != null) {
-                result.complete(true);
-                executor.shutdown();
-            }
-        };
-        executor.scheduleAtFixedRate(task, 1, 1, TimeUnit.SECONDS);
-
-        Boolean gotMessage = result.get(10, TimeUnit.SECONDS);
-        if (gotMessage) {
-            assertNotNull(this.kafkaMessage);
-            assertEquals("Userid should be the same as requested", USER_ID, this.kafkaMessage.getUserId());
-            assertEquals("Productid should be the same as requested", PRODUCT_ID, this.kafkaMessage.getProductId());
-        }
+        KafkaProductViewMessage kafkaMessage = result.get(10, TimeUnit.SECONDS);
+        assertNotNull(kafkaMessage);
+        assertEquals("Userid should be the same as requested", USER_ID, kafkaMessage.getUserId());
+        assertEquals("Productid should be the same as requested", PRODUCT_ID, kafkaMessage.getProductId());
     }
 
     @KafkaListener(topics = "view_product")
     public void receive(String payload) throws IOException {
-        this.kafkaMessage = this.json.parse(payload).getObject();
+        result.complete(json.parse(payload).getObject());
     }
 }

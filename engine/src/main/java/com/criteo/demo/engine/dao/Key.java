@@ -5,6 +5,7 @@ import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Objects;
 
 @PrimaryKeyClass
@@ -13,13 +14,13 @@ public class Key implements Serializable {
   @PrimaryKeyColumn(name = "user_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
   private Integer userId;
 
-  @PrimaryKeyColumn(name = "product_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
+  @PrimaryKeyColumn(name = "product_id", ordinal = 1, type = PrimaryKeyType.PARTITIONED)
   private Integer productId;
 
-  @PrimaryKeyColumn(name = "timestamp", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
-  private Long timestamp;
+  @PrimaryKeyColumn(name = "time", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
+  private Date timestamp;
 
-  public Key(Integer userId, Integer productId, Long timestamp) {
+  public Key(Integer userId, Integer productId, Date timestamp) {
     this.userId = userId;
     this.productId = productId;
     this.timestamp = timestamp;
@@ -56,11 +57,11 @@ public class Key implements Serializable {
     this.userId = userId;
   }
 
-  public Long getTimestamp() {
+  public Date getTimestamp() {
     return timestamp;
   }
 
-  public void setTimestamp(Long timestamp) {
+  public void setTimestamp(Date timestamp) {
     this.timestamp = timestamp;
   }
 }
