@@ -1,4 +1,4 @@
-package com.criteo.demo.engine.dao;
+package com.criteo.demo.common.dao;
 
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;

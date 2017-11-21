@@ -1,8 +1,8 @@
 package com.criteo.demo.engine.kafka;
 
 import com.criteo.demo.common.model.KafkaProductViewMessage;
-import com.criteo.demo.engine.dao.ProductViewRepository;
-import com.criteo.demo.engine.model.ProductView;
+import com.criteo.demo.common.dao.ProductViewRepository;
+import com.criteo.demo.common.model.ProductView;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

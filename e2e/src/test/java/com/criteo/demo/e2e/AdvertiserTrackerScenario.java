@@ -1,18 +1,18 @@
 package com.criteo.demo.e2e;
 
 
+import com.criteo.demo.common.dao.ProductViewRepository;
+import com.criteo.demo.common.model.ProductView;
 import com.criteo.demo.common.utils.HttpUtils;
 import com.datastax.driver.core.Session;
-import com.criteo.demo.dao.ProductViewRepository;
-import com.criteo.demo.model.ProductView;
 import com.google.common.collect.Lists;
 import cucumber.api.DataTable;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.java.AbstractCassandraConfiguration;
@@ -26,15 +26,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
-//import static com.sun.tools.corba.se.idl.constExpr.Expression.one;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -49,9 +46,8 @@ public class AdvertiserTrackerScenario {
     @Autowired
     ProductViewRepository productViewRepository;
 
-
     @Configuration
-    @EnableCassandraRepositories("com.criteo.demo.engine.dao")
+    @EnableCassandraRepositories("com.criteo.demo.common.dao")
     @EnableKafka
     static class ContextConfiguration extends AbstractCassandraConfiguration {
 
@@ -110,38 +106,29 @@ public class AdvertiserTrackerScenario {
     public void i_my_system_should_store_the_following_statistics(DataTable table) throws Throwable {
         List<Map<String, Integer>> maps = table.asMaps(String.class, Integer.class);
         Map<String, Integer> map = maps.get(0);
-        //Map<String, Integer> map = table.asMap(String.class, Integer.class);
         Integer userId = map.get("userId");
         Integer productId = map.get("productId");
 
-        //Key key = new Key(USER_ID, PRODUCT_ID);
-
-        CompletableFuture<Iterable<ProductView> > result = new CompletableFuture<>();
+        CompletableFuture<ArrayList<ProductView> > result = new CompletableFuture<>();
 
         Runnable task = () -> {
 
             Iterable<ProductView> productViews = productViewRepository.findAll();
+            ArrayList<ProductView> productList = Lists.newArrayList(productViews);
 
-            if (productViews != null) {
-                result.complete(productViews);
+            if (productList != null) {
+                result.complete(productList);
                 executor.shutdown();
             }
         };
         executor.scheduleAtFixedRate(task, 1, 1, TimeUnit.SECONDS);
 
         try {
-            Iterable<ProductView> productViews = result.get(30, TimeUnit.SECONDS);
-            ArrayList<ProductView> productList = Lists.newArrayList(productViews);
+            ArrayList<ProductView> productList = result.get(30, TimeUnit.SECONDS);
 
             ProductView product = productList.stream().filter(x -> x.getKey().getUserId() == userId).findFirst().get();
 
-
             assertEquals(productId,product.getKey().getProductId());
-            /*productViews.;
-            assertNotNull(productView);
-            assertEquals(USER_ID, (long) productView.getKey().getUserId());
-            assertEquals(PRODUCT_ID, (long) productView.getKey().getProductId());
-            assertEquals(new Date(time), productView.getKey().getTimestamp());*/
         } catch (TimeoutException | InterruptedException ex) {
             fail("Engine didn't write anything in Cassandra.");
         }

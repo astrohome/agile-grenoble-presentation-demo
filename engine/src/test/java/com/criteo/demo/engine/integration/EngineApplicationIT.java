@@ -1,9 +1,9 @@
 package com.criteo.demo.engine.integration;
 
 import com.criteo.demo.common.model.KafkaProductViewMessage;
-import com.criteo.demo.engine.dao.Key;
-import com.criteo.demo.engine.dao.ProductViewRepository;
-import com.criteo.demo.engine.model.ProductView;
+import com.criteo.demo.common.dao.Key;
+import com.criteo.demo.common.dao.ProductViewRepository;
+import com.criteo.demo.common.model.ProductView;
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,7 +44,8 @@ import static org.junit.Assert.fail;
 @ContextConfiguration(loader=AnnotationConfigContextLoader.class)
 public class EngineApplicationIT {
 
-	@Autowired ProductViewRepository productViewRepository;
+	@Autowired
+	ProductViewRepository productViewRepository;
 	@Autowired KafkaTemplate<String, String> kafkaTemplate;
 	@Autowired ObjectMapper objectMapper;
 
@@ -54,7 +55,7 @@ public class EngineApplicationIT {
 	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
 	@Configuration
-	@EnableCassandraRepositories("com.criteo.demo.engine.dao")
+	@EnableCassandraRepositories("com.criteo.demo.common.dao")
 	@EnableKafka
 	static class CassandraConfig extends AbstractCassandraConfiguration {
 

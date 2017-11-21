@@ -1,6 +1,6 @@
-package com.criteo.demo.model;
+package com.criteo.demo.common.model;
 
-import com.criteo.demo.dao.Key;
+import com.criteo.demo.common.dao.Key;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.Table;
 
