@@ -3,10 +3,13 @@ package com.criteo.demo.e2e;
 
 import com.criteo.demo.common.utils.HttpUtils;
 import com.datastax.driver.core.Session;
+import com.criteo.demo.dao.ProductViewRepository;
+import com.criteo.demo.model.ProductView;
+import com.google.common.collect.Lists;
 import cucumber.api.DataTable;
-import cucumber.api.PendingException;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.runner.RunWith;
@@ -26,11 +29,26 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import java.util.HashMap;
 import java.util.Map;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.*;
+
+//import static com.sun.tools.corba.se.idl.constExpr.Expression.one;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
 public class AdvertiserTrackerScenario {
+
+    private static final int USER_ID = 5;
+    private static final int PRODUCT_ID = 101;
+    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+
+    @Autowired
+    ProductViewRepository productViewRepository;
+
 
     @Configuration
     @EnableCassandraRepositories("com.criteo.demo.engine.dao")
@@ -89,11 +107,43 @@ public class AdvertiserTrackerScenario {
     }
 
     @Then("^my system should store the following statistics$")
-    public void i_my_system_should_store_the_following_statistics(DataTable arg1) throws Throwable {
-        // Write code here that turns the phrase above into concrete actions
-        // For automatic transformation, change DataTable to one of
-        // List<YourType>, List<List<E>>, List<Map<K,V>> or Map<K,V>.
-        // E,K,V must be a scalar (String, Integer, Date, enum etc)
-        throw new PendingException();
+    public void i_my_system_should_store_the_following_statistics(DataTable table) throws Throwable {
+        List<Map<String, Integer>> maps = table.asMaps(String.class, Integer.class);
+        Map<String, Integer> map = maps.get(0);
+        //Map<String, Integer> map = table.asMap(String.class, Integer.class);
+        Integer userId = map.get("userId");
+        Integer productId = map.get("productId");
+
+        //Key key = new Key(USER_ID, PRODUCT_ID);
+
+        CompletableFuture<Iterable<ProductView> > result = new CompletableFuture<>();
+
+        Runnable task = () -> {
+
+            Iterable<ProductView> productViews = productViewRepository.findAll();
+
+            if (productViews != null) {
+                result.complete(productViews);
+                executor.shutdown();
+            }
+        };
+        executor.scheduleAtFixedRate(task, 1, 1, TimeUnit.SECONDS);
+
+        try {
+            Iterable<ProductView> productViews = result.get(30, TimeUnit.SECONDS);
+            ArrayList<ProductView> productList = Lists.newArrayList(productViews);
+
+            ProductView product = productList.stream().filter(x -> x.getKey().getUserId() == userId).findFirst().get();
+
+
+            assertEquals(productId,product.getKey().getProductId());
+            /*productViews.;
+            assertNotNull(productView);
+            assertEquals(USER_ID, (long) productView.getKey().getUserId());
+            assertEquals(PRODUCT_ID, (long) productView.getKey().getProductId());
+            assertEquals(new Date(time), productView.getKey().getTimestamp());*/
+        } catch (TimeoutException | InterruptedException ex) {
+            fail("Engine didn't write anything in Cassandra.");
+        }
     }
 }
