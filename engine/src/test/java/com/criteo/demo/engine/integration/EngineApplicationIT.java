@@ -35,6 +35,7 @@ import java.util.concurrent.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -97,7 +98,7 @@ public class EngineApplicationIT {
 	}
 
 	@Test
-	public void test() throws JsonProcessingException, InterruptedException, ExecutionException, TimeoutException {
+	public void test() throws JsonProcessingException, ExecutionException {
 		long time = System.currentTimeMillis();
 		KafkaProductViewMessage viewProduct = new KafkaProductViewMessage(USER_ID, PRODUCT_ID, time);
 		kafkaTemplate.send("view_product", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(viewProduct));
@@ -116,10 +117,14 @@ public class EngineApplicationIT {
 		};
 		executor.scheduleAtFixedRate(task, 1, 1, TimeUnit.SECONDS);
 
-		ProductView productView = result.get(30, TimeUnit.SECONDS);
-		assertNotNull(productView);
-		assertEquals(USER_ID, (long) productView.getKey().getUserId());
-		assertEquals(PRODUCT_ID, (long) productView.getKey().getProductId());
-		assertEquals(new Date(time), productView.getKey().getTimestamp());
+		try {
+			ProductView productView = result.get(30, TimeUnit.SECONDS);
+			assertNotNull(productView);
+			assertEquals(USER_ID, (long) productView.getKey().getUserId());
+			assertEquals(PRODUCT_ID, (long) productView.getKey().getProductId());
+			assertEquals(new Date(time), productView.getKey().getTimestamp());
+		} catch (TimeoutException | InterruptedException ex) {
+			fail("Engine didn't write anything in Cassandra.");
+		}
 	}
 }
