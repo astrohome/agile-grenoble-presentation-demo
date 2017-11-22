@@ -1,14 +1,8 @@
 spring:
   kafka:
     bootstrap-servers: "kafka:9092"
-    consumer:
-      group-id: "foo"
-      auto-offset-reset: "earliest"
+    producer:
+      key-serializer: "org.apache.kafka.common.serialization.StringSerializer"
+      value-serializer: "org.springframework.kafka.support.serializer.JsonSerializer"
 
-  jackson:
-    serialization:
-      WRITE_DATES_AS_TIMESTAMPS: false
-
-kafka:
-  topic:
-    view-product: view_product
+kafka.topic.view-product: view_product

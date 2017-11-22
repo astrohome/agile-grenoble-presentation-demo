@@ -16,21 +16,19 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles({"test"})
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
 public class AdvertiserTrackerIT {
 
@@ -61,6 +59,7 @@ public class AdvertiserTrackerIT {
             Map<String, Object> props = new HashMap<>();
             props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:9092");
             props.put(ConsumerConfig.GROUP_ID_CONFIG, "json");
+            props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
             props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringSerializer.class);
             props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
             return props;
@@ -68,24 +67,32 @@ public class AdvertiserTrackerIT {
     }
 
     @Test
-    public void testKafkaFlux() throws Exception {
-
+    public void testKafkaFlux() {
         String url = "http://localhost:8080/api/advertiser-tracker/view?userid=" +
                 USER_ID + "&productid=" + PRODUCT_ID;
 
-        int send = HttpUtils.send(url);
-        assertEquals("Response code should be 200", 200, send);
+        try {
+            Map.Entry<String, Integer> response = HttpUtils.sendAndRead(url);
+            assertEquals("Response code should be 200", 200, (long) response.getValue());
+            assertEquals("Body should be empty", "", response.getKey());
+        } catch (IOException e) {
+            fail("Error sending the GET request to tracker.");
+        }
 
-        KafkaProductViewMessage kafkaMessage = result.get(20, TimeUnit.SECONDS);
-        assertNotNull(kafkaMessage);
-        assertEquals("Userid should be the same as requested", USER_ID, kafkaMessage.getUserId());
-        assertEquals("Productid should be the same as requested", PRODUCT_ID, kafkaMessage.getProductId());
+
+        try {
+            KafkaProductViewMessage kafkaMessage = result.get(20, TimeUnit.SECONDS);
+            assertNotNull(kafkaMessage);
+            assertEquals("Userid should be the same as requested", USER_ID, kafkaMessage.getUserId());
+            assertEquals("Productid should be the same as requested", PRODUCT_ID, kafkaMessage.getProductId());
+        } catch (Exception ex) {
+            fail("Error recuperating the message from Kafka.");
+        }
     }
 
     @KafkaListener(topics = "view_product")
     public void receive(@Payload KafkaProductViewMessage payload) {
         try {
-            System.out.println(payload);
             result.complete(payload);
         } catch (Exception ex) {
             result.completeExceptionally(ex);

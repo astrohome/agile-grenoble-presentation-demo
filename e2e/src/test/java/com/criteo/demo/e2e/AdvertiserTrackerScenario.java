@@ -9,8 +9,6 @@ import com.google.common.collect.Lists;
 import cucumber.api.DataTable;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -19,28 +17,24 @@ import org.springframework.data.cassandra.config.java.AbstractCassandraConfigura
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
 import org.springframework.kafka.annotation.EnableKafka;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
 public class AdvertiserTrackerScenario {
 
-    private static final int USER_ID = 5;
-    private static final int PRODUCT_ID = 101;
     private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
     @Autowired
@@ -59,29 +53,6 @@ public class AdvertiserTrackerScenario {
         @Override
         protected String getContactPoints() {
             return "cassandra";
-        }
-
-        @Bean
-        public ProducerFactory<String, String> producerFactory() {
-            return new DefaultKafkaProducerFactory<>(producerConfigs());
-        }
-
-        @Bean
-        public Map<String, Object> producerConfigs() {
-            Map<String, Object> props = new HashMap<>();
-            props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:9092");
-            props.put(ProducerConfig.RETRIES_CONFIG, 0);
-            props.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
-            props.put(ProducerConfig.LINGER_MS_CONFIG, 1);
-            props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
-            props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-            props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-            return props;
-        }
-
-        @Bean
-        public KafkaTemplate<String, String> kafkaTemplate() {
-            return new KafkaTemplate<>(producerFactory());
         }
 
         @Bean
@@ -116,19 +87,19 @@ public class AdvertiserTrackerScenario {
             Iterable<ProductView> productViews = productViewRepository.findAll();
             ArrayList<ProductView> productList = Lists.newArrayList(productViews);
 
-            if (productList != null) {
-                result.complete(productList);
-                executor.shutdown();
-            }
+            result.complete(productList);
+            executor.shutdown();
         };
         executor.scheduleAtFixedRate(task, 1, 1, TimeUnit.SECONDS);
 
         try {
             ArrayList<ProductView> productList = result.get(30, TimeUnit.SECONDS);
 
-            ProductView product = productList.stream().filter(x -> x.getKey().getUserId() == userId).findFirst().get();
+            Optional<ProductView> product = productList.stream().filter(x -> x.getKey().getUserId().equals(userId)).findAny();
 
-            assertEquals(productId, product.getKey().getProductId());
+            assertTrue("Product should have the correct values", product.isPresent());
+            ProductView productView = product.get();
+            assertEquals("Product should have the correct product id", productId, productView.getKey().getProductId());
         } catch (TimeoutException | InterruptedException ex) {
             fail("Engine didn't write anything in Cassandra.");
         }

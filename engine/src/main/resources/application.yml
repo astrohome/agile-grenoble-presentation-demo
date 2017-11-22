@@ -8,6 +8,7 @@ spring:
     bootstrap-servers: "kafka:9092"
     consumer:
       group-id: "engine"
+      auto-offset-reset: earliest
 
 kafka:
   topic:
