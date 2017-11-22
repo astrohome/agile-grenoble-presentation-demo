@@ -1,7 +1,7 @@
 # agile-grenoble-presentation-demo
 
 ### install docker
-https://docs.docker.com/docker-for-mac/install/#download-docker-for-mac
+https://www.docker.com
 
 ### Modify your /etc/hosts file
 vi /etc/hosts
