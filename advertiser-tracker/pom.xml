@@ -118,6 +118,9 @@
                                     <name>${project.artifactId}</name>
                                     <alias>advertiser-tracker</alias>
                                 </network>
+                                <log>
+                                    <color>green</color>
+                                </log>
                             </run>
                         </image>
                         <image>
@@ -137,9 +140,6 @@
                                     <name>${project.artifactId}</name>
                                     <alias>zookeeper</alias>
                                 </network>
-                                <log>
-                                    <color>green</color>
-                                </log>
                             </run>
                         </image>
                         <image>
