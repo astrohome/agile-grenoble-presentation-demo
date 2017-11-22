@@ -12,7 +12,7 @@ git clone https://github.com/astrohome/agile-grenoble-presentation-demo.git
 
 ### Setup the project
 cd ./web
-npm ./install
+npm install
 
 cd docker
 docker-compose build
@@ -31,3 +31,17 @@ mvn docker:start
 
 ### Stop container
 mvn docker:stop
+
+
+### Usefull links
+
+microservice testing : https://martinfowler.com/articles/microservice-testing/
+
+fabric8 : https://dmp.fabric8.io
+
+docker : https://www.docker.com
+
+cucumber : https://cucumber.io
+
+maven : https://maven.apache.org
+
