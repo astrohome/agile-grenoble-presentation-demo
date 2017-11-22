@@ -5,23 +5,25 @@ https://www.docker.com
 
 ### Modify your /etc/hosts file
 vi /etc/hosts
-127.0.0.1       kafka zookeeper cassandra mysql
+
+>127.0.0.1       kafka zookeeper cassandra mysql
 
 ### Get repo
 git clone https://github.com/astrohome/agile-grenoble-presentation-demo.git
 
 ### Setup the project
-cd ./web
-npm install
++ cd ./web
++ npm install
 
-cd docker
-docker-compose build
-docker-compose up
++ cd docker
++ docker-compose build
++ docker-compose up
 
 ### Run the UI
-cd web
-npm start
++ cd web
++ npm start
 
+This will launch the provided Node.js dev server and open the page in your default browser. Navigate to /advertiser
 
 ### Compile and run test
 mvn install
