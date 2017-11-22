@@ -14,16 +14,16 @@ public class Key implements Serializable {
   @PrimaryKeyColumn(name = "user_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
   private Integer userId;
 
-  @PrimaryKeyColumn(name = "product_id", ordinal = 1, type = PrimaryKeyType.PARTITIONED)
+  @PrimaryKeyColumn(name = "product_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED)
   private Integer productId;
 
-  @PrimaryKeyColumn(name = "time", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
-  private Date timestamp;
+  @PrimaryKeyColumn(name = "time", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
+  private Date time;
 
-  public Key(Integer userId, Integer productId, Date timestamp) {
+  public Key(Integer userId, Integer productId, Date time) {
     this.userId = userId;
     this.productId = productId;
-    this.timestamp = timestamp;
+    this.time = time;
   }
 
   @Override
@@ -33,12 +33,12 @@ public class Key implements Serializable {
     Key that = (Key) o;
     return Objects.equals(userId, that.userId) &&
             Objects.equals(productId, that.productId) &&
-            Objects.equals(timestamp, that.timestamp);
+            Objects.equals(time, that.time);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(userId, productId, timestamp);
+    return Objects.hash(userId, productId, time);
   }
 
   public Integer getProductId() {
@@ -57,11 +57,11 @@ public class Key implements Serializable {
     this.userId = userId;
   }
 
-  public Date getTimestamp() {
-    return timestamp;
+  public Date getTime() {
+    return time;
   }
 
-  public void setTimestamp(Date timestamp) {
-    this.timestamp = timestamp;
+  public void setTime(Date time) {
+    this.time = time;
   }
 }

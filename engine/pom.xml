@@ -115,8 +115,7 @@
 									<container>cassandra</container>
 								</dependsOn>
 								<wait>
-									<log>Started EngineApplication</log>
-									<time>${WAIT_TIMEOUT}</time>
+									<log><![CDATA[partitions\sassigned:\[view_product-0\]]]></log>									<time>${WAIT_TIMEOUT}</time>
 								</wait>
 								<network>
 									<mode>custom</mode>
