@@ -109,7 +109,7 @@ public class AdvertiserTrackerScenario {
         Integer userId = map.get("userId");
         Integer productId = map.get("productId");
 
-        CompletableFuture<ArrayList<ProductView> > result = new CompletableFuture<>();
+        CompletableFuture<ArrayList<ProductView>> result = new CompletableFuture<>();
 
         Runnable task = () -> {
 
@@ -128,7 +128,7 @@ public class AdvertiserTrackerScenario {
 
             ProductView product = productList.stream().filter(x -> x.getKey().getUserId() == userId).findFirst().get();
 
-            assertEquals(productId,product.getKey().getProductId());
+            assertEquals(productId, product.getKey().getProductId());
         } catch (TimeoutException | InterruptedException ex) {
             fail("Engine didn't write anything in Cassandra.");
         }
