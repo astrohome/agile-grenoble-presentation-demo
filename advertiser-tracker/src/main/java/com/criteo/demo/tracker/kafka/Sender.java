@@ -4,7 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
+import org.springframework.util.concurrent.ListenableFuture;
 
 @Component
 public class Sender {
@@ -18,8 +20,8 @@ public class Sender {
     this.kafkaTemplate = kafkaTemplate;
   }
 
-  public void send(String topic, String payload) {
+  public ListenableFuture<SendResult<String, String>> send(String topic, String payload) {
     LOGGER.info("sending payload='{}' to topic='{}'", payload, topic);
-    kafkaTemplate.send(topic, payload);
+    return kafkaTemplate.send(topic, payload);
   }
 }

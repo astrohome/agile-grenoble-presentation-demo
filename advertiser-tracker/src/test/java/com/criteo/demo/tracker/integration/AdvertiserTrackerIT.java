@@ -87,7 +87,11 @@ public class AdvertiserTrackerIT {
     }
 
     @KafkaListener(topics = "view_product")
-    public void receive(String payload) throws IOException {
-        result.complete(json.parse(payload).getObject());
+    public void receive(String payload) {
+        try {
+            result.complete(json.parse(payload).getObject());
+        } catch (Exception ex) {
+            result.completeExceptionally(ex);
+        }
     }
 }
