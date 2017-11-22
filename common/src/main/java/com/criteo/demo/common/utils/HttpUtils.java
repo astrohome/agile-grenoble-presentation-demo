@@ -31,6 +31,6 @@ public class HttpUtils {
         }
         in.close();
 
-        return new AbstractMap.SimpleImmutableEntry<String, Integer>(response.toString(), code);
+        return new AbstractMap.SimpleImmutableEntry<>(response.toString(), code);
     }
 }

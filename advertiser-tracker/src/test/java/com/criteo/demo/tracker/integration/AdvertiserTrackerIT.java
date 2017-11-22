@@ -31,7 +31,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
 @JsonTest
 @ActiveProfiles({"test"})
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
@@ -44,7 +43,6 @@ public class AdvertiserTrackerIT {
     private static final int PRODUCT_ID = 101;
 
     private CompletableFuture<KafkaProductViewMessage> result = new CompletableFuture<>();
-    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
     @Configuration
     @EnableKafka
@@ -82,7 +80,7 @@ public class AdvertiserTrackerIT {
         int send = HttpUtils.send(url);
         assertEquals("Response code should be 200", 200, send);
 
-        KafkaProductViewMessage kafkaMessage = result.get(10, TimeUnit.SECONDS);
+        KafkaProductViewMessage kafkaMessage = result.get(20, TimeUnit.SECONDS);
         assertNotNull(kafkaMessage);
         assertEquals("Userid should be the same as requested", USER_ID, kafkaMessage.getUserId());
         assertEquals("Productid should be the same as requested", PRODUCT_ID, kafkaMessage.getProductId());
