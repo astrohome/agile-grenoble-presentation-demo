@@ -128,6 +128,7 @@
                             <run>
                                 <ports>
                                     <port>8080:8080</port>
+                                    <port>5005:5005</port>
                                 </ports>
                                 <dependsOn>
                                     <container>kafka</container>
